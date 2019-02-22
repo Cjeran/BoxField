@@ -21,13 +21,15 @@ namespace BoxField
         //lists to hold columns of boxes        
         new List<Box> leftBoxes = new List<Box>();
         new List<Box> rightBoxes = new List<Box>();
-        new List<Player> hero = new List<Player>();
+        new List<Box> hero = new List<Box>();
 
-        //Box Timer
+        //Custom Variables
         int boxTimer;
         public int location, c, change;
         Random randGen = new Random();
         Boolean moveRight = true;
+        int boxSpeed = 5;
+        Box p;
 
         public GameScreen()
         {
@@ -40,15 +42,16 @@ namespace BoxField
         /// </summary>
         public void OnStart()
         {
-            location = this.Width / 2 - 150;
+            location = this.Width / 2 - 75;
             c = 1;
-            //TODO - set game start values
+            //game start values
             Box b1 = new Box(location, 0, 25, c);
             leftBoxes.Add(b1);
-            Box b2 = new Box(location + 275, 0, 25, c);
+            leftBoxes.Add(b1);
+            leftBoxes.Add(b1);
+            Box b2 = new Box(location + 125, 0, 25, c);
             rightBoxes.Add(b2);
-            Player p = new Player(this.Width / 2, this.Height - 100);
-            hero.Add(p);
+            p = new Box(this.Width / 2 - b1.size, this.Height - 100, 25, 7);
         }
 
         private void GameScreen_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
@@ -81,49 +84,26 @@ namespace BoxField
 
         private void gameLoop_Tick(object sender, EventArgs e)
         {
-            //TODO - update location of all boxes (drop down screen)
-            foreach (Box b in leftBoxes)
-            {
-                b.y = b.y + 5;
-            }
+            //Moves All Boxes Down Screen
+            foreach (Box b in leftBoxes){b.Move(boxSpeed);}
+            foreach (Box b in rightBoxes){b.Move(boxSpeed);}
 
-            foreach (Box b in rightBoxes)
-            {
-                b.y = b.y + 5;
-            }
+            //Check and remove the bottom box if it has gone off screen
+            if (leftBoxes[0].y >= this.Height){leftBoxes.Remove(leftBoxes[0]);}
+            if (rightBoxes[0].y >= this.Height){rightBoxes.Remove(rightBoxes[0]);}
 
-            if (leftArrowDown)
-            {
-                hero[0].x = hero[0].x - 5;
-            } else if (rightArrowDown)
-            {
-                hero[0].x = hero[0].x + 5;
-            }
-            //TODO - remove box if it has gone of screen
-            if (leftBoxes[0].y >= this.Height)
-            {
-                leftBoxes.Remove(leftBoxes[0]);
-            }
-            if (rightBoxes[0].y >= this.Height)
-            {
-                rightBoxes.Remove(rightBoxes[0]);
-            }
-            //TODO - add new box if it is time
+            //Randomly change direction, 1 in 50
             change = randGen.Next(1, 101);
-            if (change <= 2)
-            {
-                moveRight = !moveRight;
-            }
+            if (change <= 2){moveRight = !moveRight;}
 
-            if (location >= this.Width - 300)
-            {
-                moveRight = false;
-            }
-            else if (location <= 0)
-            {
-                moveRight = true;
-            }
+            //If the boxes collide with walls, change direction
+            if (location >= this.Width - 300){moveRight = false;}
+            else if (location <= 0){moveRight = true;}
             else { }
+
+            //Detect Movement
+            if (leftBoxes[2].x + 50 >= p.x){p.Move(2, "right");}
+            else if (leftBoxes[2].x + 50 <= p.x){p.Move(2, "left");}
 
             boxTimer++;
             if (boxTimer % 8 == 0)
@@ -138,9 +118,18 @@ namespace BoxField
                 c = randGen.Next(1, 6);
                 Box b1 = new Box(location, 0, 25, c);
                 leftBoxes.Add(b1);
-                Box b2 = new Box(location + 275, 0, 25, c);
+                Box b2 = new Box(location + 125, 0, 25, c);
                 rightBoxes.Add(b2);
                 boxTimer = 0;
+            }
+
+            foreach (Box b in leftBoxes.Union(rightBoxes))
+            {
+                if (p.Collision(b))
+                {
+                    gameLoop.Stop();
+                }
+                else { }
             }
             Refresh();
         }
@@ -156,10 +145,7 @@ namespace BoxField
             {
                 e.Graphics.FillRectangle(b.brush, b.x, b.y, b.size, b.size);
             }
-            foreach (Player p in hero)
-            {
-                e.Graphics.FillPolygon(p.heroBrush, p.points);
-            }
+                e.Graphics.FillRectangle(p.brush, p.x, p.y, p.size, p.size);
         }
     }
 }
