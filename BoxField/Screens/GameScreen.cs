@@ -28,7 +28,7 @@ namespace BoxField
         public int location, c, change;
         Random randGen = new Random();
         Boolean moveRight = true;
-        int boxSpeed = 5;
+        int boxSpeed = 15;
         Box p;
 
         public GameScreen()
@@ -46,6 +46,7 @@ namespace BoxField
             c = 1;
             //game start values
             Box b1 = new Box(location, 0, 25, c);
+            leftBoxes.Add(b1);
             leftBoxes.Add(b1);
             leftBoxes.Add(b1);
             leftBoxes.Add(b1);
@@ -102,11 +103,14 @@ namespace BoxField
             else { }
 
             //Detect Movement
-            if (leftBoxes[2].x + 50 >= p.x){p.Move(2, "right");}
-            else if (leftBoxes[2].x + 50 <= p.x){p.Move(2, "left");}
+            if (leftBoxes[2].x + (leftBoxes[2].size / 2) + 50 > p.x){p.Move(5, "right");}
+            else if (leftBoxes[2].x + (leftBoxes[2].size / 2) + 50 < p.x){p.Move(5, "left");}
 
+            //if (rightArrowDown) { p.Move(3, "right"); }
+            //else if (leftArrowDown){p.Move(3, "left");}
+            
             boxTimer++;
-            if (boxTimer % 8 == 0)
+            if (boxTimer % 2 == 0)
             {
                 if (moveRight == true)
                 {
